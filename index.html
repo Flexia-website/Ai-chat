@@ -22,13 +22,15 @@
       min-height: 100vh;
       margin: 0;
       padding: 12px;
+      height: 100vh;
+      overflow: hidden;
     }
 
     .chat-container {
       width: 100%;
       max-width: 1100px;
-      height: 90vh;
-      max-height: 850px;
+      height: 95vh;
+      max-height: 900px;
       background: rgba(255, 250, 240, 0.75);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
@@ -50,6 +52,7 @@
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid rgba(255, 215, 0, 0.4);
+      flex-shrink: 0;
     }
 
     .bot-info {
@@ -93,13 +96,14 @@
     }
 
     .chat-messages {
-      flex: 1;
+      flex: 1 1 auto;
       padding: 26px 28px;
       overflow-y: auto;
       background: rgba(250, 240, 220, 0.3);
       display: flex;
       flex-direction: column;
       gap: 18px;
+      min-height: 0;
     }
 
     .message {
@@ -143,7 +147,6 @@
       color: #ffdb7c;
     }
 
-    /* Code blocks */
     .code-block-wrapper {
       margin: 16px 0 10px;
       border-radius: 20px;
@@ -200,7 +203,6 @@
       word-break: break-word;
     }
 
-    /* Typing indicator */
     .typing-indicator {
       display: flex;
       align-items: center;
@@ -231,7 +233,6 @@
       30% { transform: translateY(-12px); opacity: 1; }
     }
 
-    /* Input area */
     .chat-input-area {
       display: flex;
       padding: 18px 26px;
@@ -240,6 +241,7 @@
       -webkit-backdrop-filter: blur(16px);
       border-top: 1px solid rgba(212, 175, 55, 0.2);
       gap: 14px;
+      flex-shrink: 0;
     }
 
     .input-wrapper {
@@ -266,7 +268,6 @@
       font-family: inherit;
     }
 
-    /* Perfect circle send button */
     #sendBtn {
       background: #b8860b;
       color: #1f1407;
@@ -293,7 +294,6 @@
       line-height: 1;
     }
 
-    /* Modal */
     .modal {
       display: none;
       position: fixed;
@@ -352,7 +352,6 @@
       background: white;
     }
 
-    /* ===== RESPONSIVE ENHANCEMENTS ===== */
     @media (max-width: 768px) {
       .chat-header {
         padding: 14px 20px;
@@ -365,10 +364,6 @@
       .bot-name {
         font-size: 1.2rem;
       }
-      .bot-status {
-        font-size: 0.7rem;
-        padding: 4px 10px;
-      }
       .chat-messages {
         padding: 20px 22px;
       }
@@ -379,144 +374,43 @@
       }
       .chat-input-area {
         padding: 14px 20px;
-        gap: 12px;
       }
       #userInput {
         padding: 12px 0;
-        font-size: 0.95rem;
       }
       #sendBtn {
         width: 48px;
         height: 48px;
         font-size: 1.2rem;
       }
-      .code-header {
-        padding: 8px 14px;
-        font-size: 0.8rem;
-      }
-      .code-actions button {
-        padding: 4px 6px;
-        font-size: 0.8rem;
-      }
-      .code-block {
-        padding: 14px;
-        font-size: 0.85rem;
-      }
     }
 
     @media (max-width: 480px) {
       body {
-        padding: 8px;
+        padding: 6px;
       }
       .chat-container {
-        border-radius: 32px;
-      }
-      .chat-header {
-        padding: 12px 16px;
-      }
-      .bot-info {
-        gap: 10px;
-      }
-      .bot-avatar {
-        width: 38px;
-        height: 38px;
-        font-size: 20px;
-        border-radius: 14px;
-      }
-      .bot-name {
-        font-size: 1.1rem;
-      }
-      .bot-status {
-        font-size: 0.65rem;
-        padding: 3px 8px;
+        border-radius: 30px;
       }
       .chat-messages {
-        padding: 16px 16px;
-        gap: 14px;
+        padding: 16px;
       }
       .message {
         max-width: 98%;
-        padding: 12px 16px;
         font-size: 0.9rem;
-      }
-      .chat-input-area {
         padding: 12px 16px;
-        gap: 10px;
       }
       .input-wrapper {
         padding-left: 16px;
       }
       #userInput {
         padding: 10px 0;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
       }
       #sendBtn {
         width: 44px;
         height: 44px;
         font-size: 1.1rem;
-      }
-      .code-block-wrapper {
-        margin: 12px 0 8px;
-        border-radius: 16px;
-      }
-      .code-header {
-        padding: 6px 12px;
-      }
-      .code-actions {
-        gap: 6px;
-      }
-      .code-actions button {
-        padding: 4px 5px;
-        font-size: 0.75rem;
-      }
-      .code-actions button span {
-        display: none; /* hide text on very small, keep icons */
-      }
-      .code-actions button i {
-        margin: 0;
-      }
-      .code-block {
-        padding: 12px;
-        font-size: 0.8rem;
-      }
-      .modal-content {
-        width: 95%;
-        height: 85%;
-        border-radius: 22px;
-      }
-      .modal-header {
-        padding: 14px 18px;
-      }
-      .modal-header h3 {
-        font-size: 1rem;
-      }
-      .close-modal {
-        font-size: 1.8rem;
-      }
-    }
-
-    @media (max-width: 360px) {
-      .chat-header {
-        padding: 10px 12px;
-      }
-      .bot-avatar {
-        width: 34px;
-        height: 34px;
-        font-size: 18px;
-      }
-      .bot-name {
-        font-size: 1rem;
-      }
-      .bot-status {
-        padding: 2px 6px;
-      }
-      .chat-input-area {
-        padding: 10px 12px;
-      }
-      #sendBtn {
-        width: 40px;
-        height: 40px;
-        font-size: 1rem;
       }
     }
   </style>
@@ -552,7 +446,6 @@
     </div>
   </div>
 
-  <!-- Preview Modal -->
   <div class="modal" id="previewModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -566,216 +459,470 @@
   </div>
 
   <script>
-    // API key (replace with your own)
-    const API_KEY = 'AIzaSyD1PS21YAO4l_UIMRVQDE8-A44siMuMfjM';
-    const MODEL = 'gemini-2.5-flash';
+    (function() {
+      // ==================== MULTI-API KEY CONFIGURATION ====================
+      // Define your API configurations with multiple keys per provider
+      // These will read from environment variables set in Render
+      
+      const API_CONFIGS = [
+        { 
+          name: 'Gemini',
+          type: 'gemini',
+          // Split comma-separated string into array of keys
+          // Format in Render: GEMINI_API_KEYS=key1,key2,key3,key4,key5
+          keys: (typeof process !== 'undefined' && process.env && process.env.GEMINI_API_KEYS) 
+            ? process.env.GEMINI_API_KEYS.split(',') 
+            : ['AIzaSyD1PS21YAO4l_UIMRVQDE8-A44siMuMfjM'], // Fallback default key
+          model: 'gemini-2.5-flash',
+          url: (model) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=`,
+          currentKeyIndex: 0,
+          failedKeys: []
+        },
+        { 
+          name: 'OpenAI',
+          type: 'openai',
+          // Format in Render: OPENAI_API_KEYS=sk-key1,sk-key2,sk-key3
+          keys: (typeof process !== 'undefined' && process.env && process.env.OPENAI_API_KEYS) 
+            ? process.env.OPENAI_API_KEYS.split(',') 
+            : [],
+          model: 'gpt-3.5-turbo',
+          url: 'https://api.openai.com/v1/chat/completions',
+          currentKeyIndex: 0,
+          failedKeys: []
+        },
+        { 
+          name: 'DeepSeek',
+          type: 'deepseek',
+          // Format in Render: DEEPSEEK_API_KEYS=deepsek-key1,deepsek-key2
+          keys: (typeof process !== 'undefined' && process.env && process.env.DEEPSEEK_API_KEYS) 
+            ? process.env.DEEPSEEK_API_KEYS.split(',') 
+            : [],
+          model: 'deepseek-chat',
+          url: 'https://api.deepseek.com/v1/chat/completions',
+          currentKeyIndex: 0,
+          failedKeys: []
+        },
+        { 
+          name: 'Anthropic',
+          type: 'anthropic',
+          // Format in Render: ANTHROPIC_API_KEYS=sk-ant-key1,sk-ant-key2
+          keys: (typeof process !== 'undefined' && process.env && process.env.ANTHROPIC_API_KEYS) 
+            ? process.env.ANTHROPIC_API_KEYS.split(',') 
+            : [],
+          model: 'claude-3-sonnet-20240229',
+          url: 'https://api.anthropic.com/v1/messages',
+          currentKeyIndex: 0,
+          failedKeys: []
+        }
+      ];
 
-    const chatMessages = document.getElementById('chatMessages');
-    const userInput = document.getElementById('userInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const previewModal = document.getElementById('previewModal');
-    const previewFrame = document.getElementById('previewFrame');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-
-    closeModalBtn.addEventListener('click', () => {
-      previewModal.classList.remove('active');
-      previewFrame.srcdoc = '';
-    });
-    window.addEventListener('click', (e) => {
-      if (e.target === previewModal) {
-        previewModal.classList.remove('active');
-        previewFrame.srcdoc = '';
+      // Filter out providers with no keys
+      const activeAPIs = API_CONFIGS.filter(api => api.keys && api.keys.length > 0);
+      
+      if (activeAPIs.length === 0) {
+        // Fallback to ensure at least Gemini works with default key
+        activeAPIs.push({
+          name: 'Gemini',
+          type: 'gemini',
+          keys: ['AIzaSyD1PS21YAO4l_UIMRVQDE8-A44siMuMfjM'],
+          model: 'gemini-2.5-flash',
+          url: (model) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=`,
+          currentKeyIndex: 0,
+          failedKeys: []
+        });
       }
-    });
 
-    // Escape HTML special chars
-    function escapeHtml(unsafe) {
-      return unsafe.replace(/[&<>"]/g, (m) => {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        if (m === '"') return '&quot;';
-        return m;
-      });
-    }
+      // Track which provider we're currently using
+      let currentProviderIndex = 0;
 
-    // Parse bot message: extract code blocks, add interactive buttons (copy & preview only)
-    function parseMessage(text) {
-      const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
-      const blocks = [];
-      let match;
-      let lastIndex = 0;
-      let parts = [];
-
-      while ((match = codeBlockRegex.exec(text)) !== null) {
-        const before = text.slice(lastIndex, match.index);
-        parts.push({ type: 'text', content: before });
-        const lang = match[1] || 'plaintext';
-        const code = match[2];
-        blocks.push({ lang, code });
-        parts.push({ type: 'code', index: blocks.length - 1 });
-        lastIndex = match.index + match[0].length;
+      // Key rotation and failover functions
+      function getNextKey(provider) {
+        if (!provider.keys || provider.keys.length === 0) {
+          return null;
+        }
+        
+        // Try to find a working key (skip recently failed ones)
+        let attempts = 0;
+        const maxAttempts = provider.keys.length;
+        
+        while (attempts < maxAttempts) {
+          const key = provider.keys[provider.currentKeyIndex];
+          
+          // Move to next key for next time (round-robin)
+          provider.currentKeyIndex = (provider.currentKeyIndex + 1) % provider.keys.length;
+          
+          // Check if this key is in failed list (and maybe retry after cooldown)
+          const failedEntry = provider.failedKeys.find(f => f.key === key);
+          if (!failedEntry || Date.now() > failedEntry.retryAfter) {
+            // Remove from failed list if cooldown expired
+            if (failedEntry) {
+              provider.failedKeys = provider.failedKeys.filter(f => f.key !== key);
+            }
+            return key;
+          }
+          
+          attempts++;
+        }
+        
+        // All keys are in cooldown - use the first one anyway as last resort
+        return provider.keys[0];
       }
-      if (lastIndex < text.length) {
-        parts.push({ type: 'text', content: text.slice(lastIndex) });
-      }
 
-      let html = '';
-      for (let part of parts) {
-        if (part.type === 'text') {
-          let escaped = escapeHtml(part.content);
-          escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-          html += escaped;
-        } else {
-          const block = blocks[part.index];
-          const lang = block.lang;
-          const code = block.code;
-          const codeForDisplay = escapeHtml(code);
-
-          html += `
-            <div class="code-block-wrapper" data-code="${encodeURIComponent(code)}">
-              <div class="code-header">
-                <span><i class="fas fa-code"></i> ${lang}</span>
-                <div class="code-actions">
-                  ${lang.toLowerCase() === 'html' ? `<button class="preview-btn" title="Preview HTML"><i class="fas fa-eye"></i><span> Preview</span></button>` : ''}
-                  <button class="copy-btn" title="Copy to clipboard"><i class="fas fa-copy"></i><span> Copy</span></button>
-                </div>
-              </div>
-              <div class="code-block">
-                <code>${codeForDisplay}</code>
-              </div>
-            </div>
-          `;
+      function markKeyFailed(provider, key, cooldownMs = 60000) {
+        console.log(`Key failed for ${provider.name}, cooling down for ${cooldownMs}ms`);
+        provider.failedKeys.push({
+          key: key,
+          retryAfter: Date.now() + cooldownMs
+        });
+        
+        // Keep failed list manageable
+        if (provider.failedKeys.length > 10) {
+          provider.failedKeys = provider.failedKeys.slice(-10);
         }
       }
-      return html;
-    }
 
-    function addMessage(text, sender) {
-      const msgDiv = document.createElement('div');
-      msgDiv.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
-
-      if (sender === 'user') {
-        msgDiv.innerHTML = escapeHtml(text).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      } else {
-        msgDiv.innerHTML = parseMessage(text);
-      }
-
-      chatMessages.appendChild(msgDiv);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-
-      // Attach event listeners to buttons (copy and preview only)
-      if (sender === 'bot') {
-        // Copy buttons
-        msgDiv.querySelectorAll('.copy-btn').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const wrapper = btn.closest('.code-block-wrapper');
-            const code = decodeURIComponent(wrapper.dataset.code);
-            navigator.clipboard.writeText(code).then(() => {
-              const original = btn.innerHTML;
-              btn.innerHTML = '<i class="fas fa-check"></i><span> Copied!</span>';
-              setTimeout(() => { btn.innerHTML = original; }, 2000);
-            }).catch(() => alert('Failed to copy.'));
-          });
-        });
-
-        // Preview buttons (HTML only)
-        msgDiv.querySelectorAll('.preview-btn').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const wrapper = btn.closest('.code-block-wrapper');
-            const code = decodeURIComponent(wrapper.dataset.code);
-            previewFrame.srcdoc = code;
-            previewModal.classList.add('active');
-          });
-        });
-      }
-    }
-
-    // Simple function to call API (no Google mention)
-    async function getBotResponse(userMessage) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
-
-      const systemInstruction = {
-        parts: [{ text: "You are Clinton Tech AI, a warm and helpful technical assistant. When showing code, use triple backticks with the language (e.g., ```html ... ```). You can use **bold** for emphasis. Keep responses clear and friendly." }]
-      };
-
-      const requestBody = {
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: userMessage }]
+      // Main API call with multi-key rotation and cross-provider failover
+      async function getBotResponse(userMessage) {
+        const startProviderIndex = currentProviderIndex;
+        let attempts = 0;
+        const maxAttempts = activeAPIs.length * 3; // Try each provider up to 3 times with different keys
+        
+        while (attempts < maxAttempts) {
+          const provider = activeAPIs[currentProviderIndex];
+          const key = getNextKey(provider);
+          
+          if (!key) {
+            // No keys available for this provider, move to next
+            currentProviderIndex = (currentProviderIndex + 1) % activeAPIs.length;
+            attempts++;
+            continue;
           }
-        ],
-        systemInstruction: systemInstruction
-      };
+          
+          try {
+            console.log(`Attempting with ${provider.name} using key index ${provider.currentKeyIndex}`);
+            
+            let reply;
+            if (provider.type === 'gemini') {
+              reply = await callGemini(provider, key, userMessage);
+            } else if (provider.type === 'openai') {
+              reply = await callOpenAI(provider, key, userMessage);
+            } else if (provider.type === 'deepseek') {
+              reply = await callDeepSeek(provider, key, userMessage);
+            } else if (provider.type === 'anthropic') {
+              reply = await callAnthropic(provider, key, userMessage);
+            } else {
+              throw new Error(`Unknown provider type: ${provider.type}`);
+            }
+            
+            // Success! Stay on this provider for next request
+            return reply;
+            
+          } catch (error) {
+            console.error(`${provider.name} failed:`, error.message);
+            
+            // Mark key as failed based on error type
+            if (error.status === 429) {
+              markKeyFailed(provider, key, 60000); // Rate limit - 1 min cooldown
+            } else if (error.status === 401 || error.status === 403) {
+              markKeyFailed(provider, key, 300000); // Auth error - 5 min cooldown
+            } else if (error.status >= 500) {
+              markKeyFailed(provider, key, 30000); // Server error - 30 sec cooldown
+            } else {
+              markKeyFailed(provider, key, 10000); // Other errors - 10 sec cooldown
+            }
+            
+            // Move to next provider
+            currentProviderIndex = (currentProviderIndex + 1) % activeAPIs.length;
+            attempts++;
+          }
+        }
+        
+        // If we exhausted all attempts
+        return "I'm having trouble connecting right now. Please try again later.";
+      }
 
-      try {
-        const response = await fetch(url, {
+      // Provider-specific API calls
+      async function callGemini(provider, key, userMessage) {
+        const requestBody = {
+          contents: [{ 
+            role: "user", 
+            parts: [{ text: userMessage }] 
+          }],
+          systemInstruction: { 
+            parts: [{ 
+              text: "You are Clinton Tech AI, a warm and helpful technical assistant. When showing code, use triple backticks with the language (e.g., ```html ... ```). You can use **bold** for emphasis. Keep responses clear and friendly." 
+            }] 
+          }
+        };
+        
+        const fullUrl = provider.url(provider.model) + key;
+        const response = await fetch(fullUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestBody)
         });
-
+        
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error?.message || `HTTP error ${response.status}`);
+          const error = new Error(`HTTP ${response.status}`);
+          error.status = response.status;
+          throw error;
+        }
+        
+        const data = await response.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || "No reply from Gemini.";
+      }
+
+      async function callOpenAI(provider, key, userMessage) {
+        const requestBody = {
+          model: provider.model,
+          messages: [
+            { role: "system", content: "You are Clinton Tech AI, a warm and helpful technical assistant. Use **bold** and code blocks with language labels." },
+            { role: "user", content: userMessage }
+          ]
+        };
+        
+        const response = await fetch(provider.url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${key}`
+          },
+          body: JSON.stringify(requestBody)
+        });
+        
+        if (!response.ok) {
+          const error = new Error(`HTTP ${response.status}`);
+          error.status = response.status;
+          throw error;
+        }
+        
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content || "No reply from OpenAI.";
+      }
+
+      async function callDeepSeek(provider, key, userMessage) {
+        const requestBody = {
+          model: provider.model,
+          messages: [
+            { role: "system", content: "You are Clinton Tech AI, a warm and helpful technical assistant. Use **bold** and code blocks." },
+            { role: "user", content: userMessage }
+          ]
+        };
+        
+        const response = await fetch(provider.url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${key}`
+          },
+          body: JSON.stringify(requestBody)
+        });
+        
+        if (!response.ok) {
+          const error = new Error(`HTTP ${response.status}`);
+          error.status = response.status;
+          throw error;
+        }
+        
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content || "No reply from DeepSeek.";
+      }
+
+      async function callAnthropic(provider, key, userMessage) {
+        const requestBody = {
+          model: provider.model,
+          max_tokens: 1024,
+          messages: [
+            { role: "user", content: userMessage }
+          ],
+          system: "You are Clinton Tech AI, a warm and helpful technical assistant. Use **bold** and code blocks with language labels."
+        };
+        
+        const response = await fetch(provider.url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': key,
+            'anthropic-version': '2023-06-01'
+          },
+          body: JSON.stringify(requestBody)
+        });
+        
+        if (!response.ok) {
+          const error = new Error(`HTTP ${response.status}`);
+          error.status = response.status;
+          throw error;
+        }
+        
+        const data = await response.json();
+        return data.content?.[0]?.text || "No reply from Anthropic.";
+      }
+
+      // ========== UI CODE (unchanged) ==========
+      const chatMessages = document.getElementById('chatMessages');
+      const userInput = document.getElementById('userInput');
+      const sendBtn = document.getElementById('sendBtn');
+      const previewModal = document.getElementById('previewModal');
+      const previewFrame = document.getElementById('previewFrame');
+      const closeModalBtn = document.getElementById('closeModalBtn');
+
+      closeModalBtn.addEventListener('click', () => {
+        previewModal.classList.remove('active');
+        previewFrame.srcdoc = '';
+      });
+      
+      window.addEventListener('click', (e) => {
+        if (e.target === previewModal) {
+          previewModal.classList.remove('active');
+          previewFrame.srcdoc = '';
+        }
+      });
+
+      function escapeHtml(unsafe) {
+        return unsafe.replace(/[&<>"]/g, (m) => {
+          if (m === '&') return '&amp;';
+          if (m === '<') return '&lt;';
+          if (m === '>') return '&gt;';
+          if (m === '"') return '&quot;';
+          return m;
+        });
+      }
+
+      function parseMessage(text) {
+        const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
+        const blocks = [];
+        let match;
+        let lastIndex = 0;
+        let parts = [];
+
+        while ((match = codeBlockRegex.exec(text)) !== null) {
+          const before = text.slice(lastIndex, match.index);
+          if (before) parts.push({ type: 'text', content: before });
+          const lang = match[1] || 'plaintext';
+          const code = match[2];
+          blocks.push({ lang, code });
+          parts.push({ type: 'code', index: blocks.length - 1 });
+          lastIndex = match.index + match[0].length;
+        }
+        if (lastIndex < text.length) {
+          parts.push({ type: 'text', content: text.slice(lastIndex) });
         }
 
-        const data = await response.json();
-        const botReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't process that.";
-        return botReply;
-      } catch (error) {
-        console.error('API error:', error); // console only – no user-facing reference
-        // Return a generic error message without mentioning Google or Gemini
-        return "I'm having trouble connecting right now. Please try again later.";
+        let html = '';
+        for (let part of parts) {
+          if (part.type === 'text') {
+            let escaped = escapeHtml(part.content);
+            escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            html += escaped;
+          } else {
+            const block = blocks[part.index];
+            const lang = block.lang;
+            const code = block.code;
+            const codeForDisplay = escapeHtml(code);
+
+            html += `
+              <div class="code-block-wrapper" data-code="${encodeURIComponent(code)}">
+                <div class="code-header">
+                  <span><i class="fas fa-code"></i> ${lang}</span>
+                  <div class="code-actions">
+                    ${lang.toLowerCase() === 'html' ? `<button class="preview-btn" title="Preview HTML"><i class="fas fa-eye"></i><span> Preview</span></button>` : ''}
+                    <button class="copy-btn" title="Copy to clipboard"><i class="fas fa-copy"></i><span> Copy</span></button>
+                  </div>
+                </div>
+                <div class="code-block">
+                  <code>${codeForDisplay}</code>
+                </div>
+              </div>
+            `;
+          }
+        }
+        return html;
       }
-    }
 
-    function showTypingIndicator() {
-      const indicator = document.createElement('div');
-      indicator.classList.add('typing-indicator');
-      indicator.id = 'typingIndicator';
-      indicator.innerHTML = '<span></span><span></span><span></span>';
-      chatMessages.appendChild(indicator);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
+      function addMessage(text, sender) {
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
 
-    function removeTypingIndicator() {
-      const indicator = document.getElementById('typingIndicator');
-      if (indicator) indicator.remove();
-    }
+        if (sender === 'user') {
+          msgDiv.innerHTML = escapeHtml(text).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        } else {
+          msgDiv.innerHTML = parseMessage(text);
+        }
 
-    async function handleSend() {
-      const message = userInput.value.trim();
-      if (!message) return;
+        chatMessages.appendChild(msgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
 
-      userInput.disabled = true;
-      sendBtn.disabled = true;
+        if (sender === 'bot') {
+          msgDiv.querySelectorAll('.copy-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const wrapper = btn.closest('.code-block-wrapper');
+              const code = decodeURIComponent(wrapper.dataset.code);
+              navigator.clipboard.writeText(code).then(() => {
+                const original = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i><span> Copied!</span>';
+                setTimeout(() => { btn.innerHTML = original; }, 2000);
+              }).catch(() => alert('Failed to copy.'));
+            });
+          });
 
-      addMessage(message, 'user');
-      userInput.value = '';
+          msgDiv.querySelectorAll('.preview-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const wrapper = btn.closest('.code-block-wrapper');
+              const code = decodeURIComponent(wrapper.dataset.code);
+              previewFrame.srcdoc = code;
+              previewModal.classList.add('active');
+            });
+          });
+        }
+      }
 
-      showTypingIndicator();
+      function showTypingIndicator() {
+        const indicator = document.createElement('div');
+        indicator.classList.add('typing-indicator');
+        indicator.id = 'typingIndicator';
+        indicator.innerHTML = '<span></span><span></span><span></span>';
+        chatMessages.appendChild(indicator);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
 
-      const reply = await getBotResponse(message);
+      function removeTypingIndicator() {
+        const indicator = document.getElementById('typingIndicator');
+        if (indicator) indicator.remove();
+      }
 
-      removeTypingIndicator();
-      addMessage(reply, 'bot');
+      async function handleSend() {
+        const message = userInput.value.trim();
+        if (!message) return;
 
-      userInput.disabled = false;
-      sendBtn.disabled = false;
-      userInput.focus();
-    }
+        userInput.disabled = true;
+        sendBtn.disabled = true;
 
-    sendBtn.addEventListener('click', handleSend);
-    userInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') handleSend();
-    });
+        addMessage(message, 'user');
+        userInput.value = '';
 
-    // Welcome message with updated name
-    addMessage("Hello! I'm **Clinton Tech AI**, your personal coding companion with a golden heart. ✨ I can help you write, explain, and preview code. Try me — paste any code or ask a question!", 'bot');
+        showTypingIndicator();
+
+        const reply = await getBotResponse(message);
+
+        removeTypingIndicator();
+        addMessage(reply, 'bot');
+
+        userInput.disabled = false;
+        sendBtn.disabled = false;
+        userInput.focus();
+      }
+
+      sendBtn.addEventListener('click', handleSend);
+      userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleSend();
+      });
+
+      // Simple welcome message without API count
+      addMessage("Hello! I'm **Clinton Tech AI**, your personal coding companion with a golden heart. ✨ I can help you write, explain, and preview code. Try me — paste any code or ask a question!", 'bot');
+
+    })();
   </script>
 </body>
 </html>
