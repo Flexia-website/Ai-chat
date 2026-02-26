@@ -462,303 +462,242 @@
     (function() {
       // ==================== MULTI-API KEY CONFIGURATION ====================
       // Define your API configurations with multiple keys per provider
-      // These will read from environment variables set in Render
       
+      // Helper to get keys from environment or use defaults
+      function getGeminiKeys() {
+        // Check if we're in a browser with process.env (for Render)
+        if (typeof process !== 'undefined' && process.env && process.env.GEMINI_API_KEYS) {
+          return process.env.GEMINI_API_KEYS.split(',').map(k => k.trim());
+        }
+        
+        // Check if we're in browser with window.ENV (for some setups)
+        if (typeof window !== 'undefined' && window.ENV && window.ENV.GEMINI_API_KEYS) {
+          return window.ENV.GEMINI_API_KEYS.split(',').map(k => k.trim());
+        }
+        
+        // Default keys - your 4 keys (no spaces!)
+        return [
+          'AIzaSyAYMcO0nUkVMqOiwiqt32IhrWxC28exAAo',
+          'AIzaSyD7Pj_nVAM81WaKLeyE4TFt2crU9BmLf70',
+          'AIzaSyD1PS21YAO4l_UIMRVQDE8-A44siMuMfjM',
+          'AIzaSyDX7HnaGphZI4OMUhHVUjD4aLRgwGh_RO8'
+        ];
+      }
+
       const API_CONFIGS = [
         { 
           name: 'Gemini',
           type: 'gemini',
-          // Split comma-separated string into array of keys
-          // Format in Render: GEMINI_API_KEYS=key1,key2,key3,key4,key5
-          keys: (typeof process !== 'undefined' && process.env && process.env.GEMINI_API_KEYS) 
-            ? process.env.GEMINI_API_KEYS.split(',') 
-            : ['AIzaSyD1PS21YAO4l_UIMRVQDE8-A44siMuMfjM'], // Fallback default key
+          keys: getGeminiKeys(),
           model: 'gemini-2.5-flash',
           url: (model) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=`,
           currentKeyIndex: 0,
-          failedKeys: []
+          failedKeys: [],
+          cooldowns: {}
         },
         { 
           name: 'OpenAI',
           type: 'openai',
-          // Format in Render: OPENAI_API_KEYS=sk-key1,sk-key2,sk-key3
           keys: (typeof process !== 'undefined' && process.env && process.env.OPENAI_API_KEYS) 
-            ? process.env.OPENAI_API_KEYS.split(',') 
+            ? process.env.OPENAI_API_KEYS.split(',').map(k => k.trim()) 
             : [],
           model: 'gpt-3.5-turbo',
           url: 'https://api.openai.com/v1/chat/completions',
           currentKeyIndex: 0,
-          failedKeys: []
+          failedKeys: [],
+          cooldowns: {}
         },
         { 
           name: 'DeepSeek',
           type: 'deepseek',
-          // Format in Render: DEEPSEEK_API_KEYS=deepsek-key1,deepsek-key2
           keys: (typeof process !== 'undefined' && process.env && process.env.DEEPSEEK_API_KEYS) 
-            ? process.env.DEEPSEEK_API_KEYS.split(',') 
+            ? process.env.DEEPSEEK_API_KEYS.split(',').map(k => k.trim()) 
             : [],
           model: 'deepseek-chat',
           url: 'https://api.deepseek.com/v1/chat/completions',
           currentKeyIndex: 0,
-          failedKeys: []
-        },
-        { 
-          name: 'Anthropic',
-          type: 'anthropic',
-          // Format in Render: ANTHROPIC_API_KEYS=sk-ant-key1,sk-ant-key2
-          keys: (typeof process !== 'undefined' && process.env && process.env.ANTHROPIC_API_KEYS) 
-            ? process.env.ANTHROPIC_API_KEYS.split(',') 
-            : [],
-          model: 'claude-3-sonnet-20240229',
-          url: 'https://api.anthropic.com/v1/messages',
-          currentKeyIndex: 0,
-          failedKeys: []
+          failedKeys: [],
+          cooldowns: {}
         }
       ];
 
-      // Filter out providers with no keys
+      // Filter to only providers with keys
       const activeAPIs = API_CONFIGS.filter(api => api.keys && api.keys.length > 0);
       
-      if (activeAPIs.length === 0) {
-        // Fallback to ensure at least Gemini works with default key
-        activeAPIs.push({
-          name: 'Gemini',
-          type: 'gemini',
-          keys: ['AIzaSyD1PS21YAO4l_UIMRVQDE8-A44siMuMfjM'],
-          model: 'gemini-2.5-flash',
-          url: (model) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=`,
-          currentKeyIndex: 0,
-          failedKeys: []
+      // Track which provider we're using
+      let currentProviderIndex = 0;
+
+      // Key management functions
+      function isKeyInCooldown(provider, key) {
+        const cooldown = provider.cooldowns[key];
+        return cooldown && Date.now() < cooldown;
+      }
+
+      function markKeyCooldown(provider, key, cooldownMs) {
+        provider.cooldowns[key] = Date.now() + cooldownMs;
+        // Clean up old cooldowns
+        const now = Date.now();
+        Object.keys(provider.cooldowns).forEach(k => {
+          if (provider.cooldowns[k] < now) {
+            delete provider.cooldowns[k];
+          }
         });
       }
 
-      // Track which provider we're currently using
-      let currentProviderIndex = 0;
-
-      // Key rotation and failover functions
-      function getNextKey(provider) {
-        if (!provider.keys || provider.keys.length === 0) {
-          return null;
-        }
+      // Get next working key for a provider
+      function getNextWorkingKey(provider) {
+        if (!provider.keys || provider.keys.length === 0) return null;
         
-        // Try to find a working key (skip recently failed ones)
+        const startIndex = provider.currentKeyIndex;
         let attempts = 0;
-        const maxAttempts = provider.keys.length;
         
-        while (attempts < maxAttempts) {
+        while (attempts < provider.keys.length) {
           const key = provider.keys[provider.currentKeyIndex];
           
-          // Move to next key for next time (round-robin)
+          // Move to next key for next attempt
           provider.currentKeyIndex = (provider.currentKeyIndex + 1) % provider.keys.length;
           
-          // Check if this key is in failed list (and maybe retry after cooldown)
-          const failedEntry = provider.failedKeys.find(f => f.key === key);
-          if (!failedEntry || Date.now() > failedEntry.retryAfter) {
-            // Remove from failed list if cooldown expired
-            if (failedEntry) {
-              provider.failedKeys = provider.failedKeys.filter(f => f.key !== key);
-            }
+          // Check if key is in cooldown
+          if (!isKeyInCooldown(provider, key)) {
             return key;
           }
           
           attempts++;
         }
         
-        // All keys are in cooldown - use the first one anyway as last resort
+        // All keys in cooldown - return the first one anyway
         return provider.keys[0];
       }
 
-      function markKeyFailed(provider, key, cooldownMs = 60000) {
-        console.log(`Key failed for ${provider.name}, cooling down for ${cooldownMs}ms`);
-        provider.failedKeys.push({
-          key: key,
-          retryAfter: Date.now() + cooldownMs
-        });
-        
-        // Keep failed list manageable
-        if (provider.failedKeys.length > 10) {
-          provider.failedKeys = provider.failedKeys.slice(-10);
-        }
-      }
-
-      // Main API call with multi-key rotation and cross-provider failover
+      // Main API call with proper rotation
       async function getBotResponse(userMessage) {
-        const startProviderIndex = currentProviderIndex;
-        let attempts = 0;
-        const maxAttempts = activeAPIs.length * 3; // Try each provider up to 3 times with different keys
-        
-        while (attempts < maxAttempts) {
-          const provider = activeAPIs[currentProviderIndex];
-          const key = getNextKey(provider);
+        // Try each provider in order
+        for (let p = 0; p < activeAPIs.length; p++) {
+          const providerIndex = (currentProviderIndex + p) % activeAPIs.length;
+          const provider = activeAPIs[providerIndex];
           
-          if (!key) {
-            // No keys available for this provider, move to next
-            currentProviderIndex = (currentProviderIndex + 1) % activeAPIs.length;
-            attempts++;
-            continue;
+          // Try up to all keys for this provider
+          for (let k = 0; k < provider.keys.length; k++) {
+            const key = getNextWorkingKey(provider);
+            if (!key) continue;
+            
+            try {
+              let reply;
+              
+              if (provider.type === 'gemini') {
+                const requestBody = {
+                  contents: [{ 
+                    role: "user", 
+                    parts: [{ text: userMessage }] 
+                  }],
+                  systemInstruction: { 
+                    parts: [{ 
+                      text: "You are Clinton Tech AI, a warm and helpful technical assistant. When showing code, use triple backticks with the language (e.g., ```html ... ```). You can use **bold** for emphasis. Keep responses clear and friendly." 
+                    }] 
+                  }
+                };
+                
+                const fullUrl = provider.url(provider.model) + key;
+                const response = await fetch(fullUrl, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(requestBody)
+                });
+                
+                if (!response.ok) {
+                  const error = new Error(`HTTP ${response.status}`);
+                  error.status = response.status;
+                  throw error;
+                }
+                
+                const data = await response.json();
+                reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't process that request.";
+                
+              } else if (provider.type === 'openai') {
+                const requestBody = {
+                  model: provider.model,
+                  messages: [
+                    { role: "system", content: "You are Clinton Tech AI, a warm and helpful technical assistant. Use **bold** and code blocks with language labels." },
+                    { role: "user", content: userMessage }
+                  ]
+                };
+                
+                const response = await fetch(provider.url, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${key}`
+                  },
+                  body: JSON.stringify(requestBody)
+                });
+                
+                if (!response.ok) {
+                  const error = new Error(`HTTP ${response.status}`);
+                  error.status = response.status;
+                  throw error;
+                }
+                
+                const data = await response.json();
+                reply = data.choices?.[0]?.message?.content || "No reply from OpenAI.";
+                
+              } else if (provider.type === 'deepseek') {
+                const requestBody = {
+                  model: provider.model,
+                  messages: [
+                    { role: "system", content: "You are Clinton Tech AI, a warm and helpful technical assistant. Use **bold** and code blocks." },
+                    { role: "user", content: userMessage }
+                  ]
+                };
+                
+                const response = await fetch(provider.url, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${key}`
+                  },
+                  body: JSON.stringify(requestBody)
+                });
+                
+                if (!response.ok) {
+                  const error = new Error(`HTTP ${response.status}`);
+                  error.status = response.status;
+                  throw error;
+                }
+                
+                const data = await response.json();
+                reply = data.choices?.[0]?.message?.content || "No reply from DeepSeek.";
+              }
+              
+              // Success! Update provider index for next request
+              currentProviderIndex = (providerIndex + 1) % activeAPIs.length;
+              return reply;
+              
+            } catch (error) {
+              // Handle different error types with appropriate cooldowns
+              if (error.status === 429) {
+                markKeyCooldown(provider, key, 60000); // Rate limit - 1 minute
+              } else if (error.status === 401 || error.status === 403) {
+                markKeyCooldown(provider, key, 300000); // Auth error - 5 minutes
+              } else if (error.status >= 500) {
+                markKeyCooldown(provider, key, 30000); // Server error - 30 seconds
+              } else {
+                markKeyCooldown(provider, key, 10000); // Other errors - 10 seconds
+              }
+              
+              // Continue to next key
+              console.log(`Key failed for ${provider.name}, trying next...`);
+            }
           }
           
-          try {
-            console.log(`Attempting with ${provider.name} using key index ${provider.currentKeyIndex}`);
-            
-            let reply;
-            if (provider.type === 'gemini') {
-              reply = await callGemini(provider, key, userMessage);
-            } else if (provider.type === 'openai') {
-              reply = await callOpenAI(provider, key, userMessage);
-            } else if (provider.type === 'deepseek') {
-              reply = await callDeepSeek(provider, key, userMessage);
-            } else if (provider.type === 'anthropic') {
-              reply = await callAnthropic(provider, key, userMessage);
-            } else {
-              throw new Error(`Unknown provider type: ${provider.type}`);
-            }
-            
-            // Success! Stay on this provider for next request
-            return reply;
-            
-          } catch (error) {
-            console.error(`${provider.name} failed:`, error.message);
-            
-            // Mark key as failed based on error type
-            if (error.status === 429) {
-              markKeyFailed(provider, key, 60000); // Rate limit - 1 min cooldown
-            } else if (error.status === 401 || error.status === 403) {
-              markKeyFailed(provider, key, 300000); // Auth error - 5 min cooldown
-            } else if (error.status >= 500) {
-              markKeyFailed(provider, key, 30000); // Server error - 30 sec cooldown
-            } else {
-              markKeyFailed(provider, key, 10000); // Other errors - 10 sec cooldown
-            }
-            
-            // Move to next provider
-            currentProviderIndex = (currentProviderIndex + 1) % activeAPIs.length;
-            attempts++;
-          }
+          // All keys for this provider failed, move to next provider
+          console.log(`All keys for ${provider.name} failed, trying next provider...`);
         }
         
-        // If we exhausted all attempts
+        // All providers failed
         return "I'm having trouble connecting right now. Please try again later.";
       }
 
-      // Provider-specific API calls
-      async function callGemini(provider, key, userMessage) {
-        const requestBody = {
-          contents: [{ 
-            role: "user", 
-            parts: [{ text: userMessage }] 
-          }],
-          systemInstruction: { 
-            parts: [{ 
-              text: "You are Clinton Tech AI, a warm and helpful technical assistant. When showing code, use triple backticks with the language (e.g., ```html ... ```). You can use **bold** for emphasis. Keep responses clear and friendly." 
-            }] 
-          }
-        };
-        
-        const fullUrl = provider.url(provider.model) + key;
-        const response = await fetch(fullUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
-        });
-        
-        if (!response.ok) {
-          const error = new Error(`HTTP ${response.status}`);
-          error.status = response.status;
-          throw error;
-        }
-        
-        const data = await response.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || "No reply from Gemini.";
-      }
-
-      async function callOpenAI(provider, key, userMessage) {
-        const requestBody = {
-          model: provider.model,
-          messages: [
-            { role: "system", content: "You are Clinton Tech AI, a warm and helpful technical assistant. Use **bold** and code blocks with language labels." },
-            { role: "user", content: userMessage }
-          ]
-        };
-        
-        const response = await fetch(provider.url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${key}`
-          },
-          body: JSON.stringify(requestBody)
-        });
-        
-        if (!response.ok) {
-          const error = new Error(`HTTP ${response.status}`);
-          error.status = response.status;
-          throw error;
-        }
-        
-        const data = await response.json();
-        return data.choices?.[0]?.message?.content || "No reply from OpenAI.";
-      }
-
-      async function callDeepSeek(provider, key, userMessage) {
-        const requestBody = {
-          model: provider.model,
-          messages: [
-            { role: "system", content: "You are Clinton Tech AI, a warm and helpful technical assistant. Use **bold** and code blocks." },
-            { role: "user", content: userMessage }
-          ]
-        };
-        
-        const response = await fetch(provider.url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${key}`
-          },
-          body: JSON.stringify(requestBody)
-        });
-        
-        if (!response.ok) {
-          const error = new Error(`HTTP ${response.status}`);
-          error.status = response.status;
-          throw error;
-        }
-        
-        const data = await response.json();
-        return data.choices?.[0]?.message?.content || "No reply from DeepSeek.";
-      }
-
-      async function callAnthropic(provider, key, userMessage) {
-        const requestBody = {
-          model: provider.model,
-          max_tokens: 1024,
-          messages: [
-            { role: "user", content: userMessage }
-          ],
-          system: "You are Clinton Tech AI, a warm and helpful technical assistant. Use **bold** and code blocks with language labels."
-        };
-        
-        const response = await fetch(provider.url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': key,
-            'anthropic-version': '2023-06-01'
-          },
-          body: JSON.stringify(requestBody)
-        });
-        
-        if (!response.ok) {
-          const error = new Error(`HTTP ${response.status}`);
-          error.status = response.status;
-          throw error;
-        }
-        
-        const data = await response.json();
-        return data.content?.[0]?.text || "No reply from Anthropic.";
-      }
-
-      // ========== UI CODE (unchanged) ==========
+      // ========== UI CODE ==========
       const chatMessages = document.getElementById('chatMessages');
       const userInput = document.getElementById('userInput');
       const sendBtn = document.getElementById('sendBtn');
@@ -919,7 +858,7 @@
         if (e.key === 'Enter') handleSend();
       });
 
-      // Simple welcome message without API count
+      // Welcome message
       addMessage("Hello! I'm **Clinton Tech AI**, your personal coding companion with a golden heart. ✨ I can help you write, explain, and preview code. Try me — paste any code or ask a question!", 'bot');
 
     })();
