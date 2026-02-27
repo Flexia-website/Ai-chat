@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Clinton Tech AI · compact gold</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* [Keep ALL your existing CSS exactly as you had it] */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Space Mono', sans-serif;
+            background: #0b0a0c;
+            background-image: 
+                linear-gradient(135deg, rgba(255, 215, 0, 0.03) 0%, transparent 40%),
+                repeating-linear-gradient(45deg, rgba(255, 215, 0, 0.02) 0px, rgba(255, 215, 0, 0.02) 2px, transparent 2px, transparent 8px);
+            min-height: 100dvh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 8px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" opacity="0.1"><path d="M10 10 L50 10 L50 50 L90 50 L90 10 L130 10 L130 90 L170 90 L170 130 L130 130 L130 170 L90 170 L90 130 L50 130 L50 170 L10 170 L10 10" stroke="%23ffd700" fill="none" stroke-width="1"/><circle cx="30" cy="30" r="2.5" fill="%23ffd700"/><circle cx="70" cy="70" r="2.5" fill="%23ffd700"/></svg>') repeat;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 850px;
+            height: 85dvh;
+            max-height: 90dvh;
+            background: rgba(10, 8, 12, 0.94);
+            backdrop-filter: blur(8px);
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.9), 0 0 0 1px rgba(255, 215, 0, 0.3) inset, 0 0 20px rgba(255, 215, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            transition: box-shadow 0.3s;
+        }
+
+        .chat-header {
+            background: linear-gradient(145deg, #161014 0%, #1f1720 100%);
+            padding: 16px 22px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-bottom: 1.5px solid #ffd700;
+            box-shadow: 0 3px 12px rgba(255, 215, 0, 0.1);
+            position: relative;
+        }
+
+        .chat-header::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 20%;
+            width: 60%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ffd700, #f9a826, #ffd700, transparent);
+            filter: blur(2px);
+        }
+
+        .header-icon {
+            background: #1e1a1f;
+            border-radius: 16px;
+            padding: 8px;
+            border: 1px solid #ffd700;
+            box-shadow: 0 0 10px #ffd70033;
+        }
+
+        .header-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: #ffd700;
+            stroke-width: 1.8;
+            filter: drop-shadow(0 0 4px gold);
+        }
+
+        .header-text h1 {
+            font-weight: 700;
+            font-size: 1.6rem;
+            background: linear-gradient(135deg, #fff5d7, #ffd700, #f9c851);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.02em;
+            text-shadow: 0 0 6px #ffd70066;
+        }
+
+        .header-text p {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #ccc8b0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header-text p::before {
+            content: '⧩';
+            color: #ffd700;
+            font-size: 1rem;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            background: #0d0b0f;
+            background-image: radial-gradient(circle at 30% 40%, rgba(255, 215, 0, 0.02) 0%, transparent 40%);
+            scrollbar-width: thin;
+            scrollbar-color: #f9a826 #1a151e;
+        }
+
+        .messages::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .messages::-webkit-scrollbar-track {
+            background: #1a151e;
+            border-radius: 20px;
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: #f9a826;
+            border-radius: 20px;
+            box-shadow: inset 0 0 4px #ffd700;
+        }
+
+        .message {
+            max-width: 82%;
+            padding: 12px 18px;
+            border-radius: 24px;
+            line-height: 1.4;
+            font-weight: 450;
+            font-size: 0.95rem;
+            animation: fadeIn 0.25s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,215,0,0.2);
+            backdrop-filter: blur(4px);
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #2f2a1f, #201d13);
+            color: #f7f2e0;
+            border-bottom-right-radius: 4px;
+            border-bottom-left-radius: 24px;
+            border: 1px solid #ffd70066;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+            background: #17141b;
+            color: #e7e2d9;
+            border-bottom-left-radius: 4px;
+            border-bottom-right-radius: 24px;
+        }
+
+        .message.assistant img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 16px;
+            margin-top: 10px;
+            border: 2px solid #ffd70066;
+            box-shadow: 0 0 15px #000;
+        }
+
+        pre {
+            background: #0b070f;
+            color: #ffecbf;
+            padding: 14px 16px;
+            border-radius: 18px;
+            font-size: 0.85rem;
+            margin: 10px 0 6px;
+            border: 1px solid #f9a82655;
+            box-shadow: inset 0 0 6px #000;
+            font-family: 'Space Mono', monospace;
+            overflow-x: auto;
+        }
+
+        code {
+            font-family: inherit;
+            color: #ffd685;
+        }
+
+        .preview-btn {
+            background: #161113;
+            border: 1.5px solid #ffd700;
+            color: #ffd700;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            margin: 4px 0 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 0 10px #ffd70033;
+            text-transform: uppercase;
+        }
+
+        .preview-btn::before {
+            content: '▶';
+            font-size: 0.9rem;
+        }
+
+        .preview-btn:hover {
+            background: #ffd70022;
+            border-color: #f9d77e;
+            color: #fff0b5;
+            box-shadow: 0 0 15px #ffd700;
+        }
+
+        .typing-indicator {
+            align-self: flex-start;
+            background: #1a1720dd;
+            backdrop-filter: blur(6px);
+            padding: 12px 20px;
+            border-radius: 40px;
+            border-bottom-left-radius: 6px;
+            display: flex;
+            gap: 6px;
+            border: 1px solid #ffd70099;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #ffd700;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out both;
+            box-shadow: 0 0 8px gold;
+        }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+            40% { transform: scale(1.1); opacity: 1; background: #ffd700; }
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-area {
+            display: flex;
+            padding: 14px 20px;
+            background: #0c0910ee;
+            backdrop-filter: blur(8px);
+            border-top: 2px solid #ffd70055;
+            gap: 10px;
+            align-items: center;
+            box-shadow: 0 -6px 20px #00000099;
+        }
+
+        #userInput {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #5f4f2e;
+            border-radius: 40px;
+            font-size: 0.95rem;
+            background: #0e0c12;
+            color: #ffecbf;
+            caret-color: #ffd700;
+            box-shadow: inset 0 2px 6px #000;
+            transition: all 0.2s;
+        }
+
+        #userInput:focus {
+            border-color: #ffd700;
+            box-shadow: 0 0 0 2px #ffd70033, inset 0 2px 6px black;
+            background: #141019;
+        }
+
+        #sendButton {
+            background: radial-gradient(circle at 30% 20%, #f9c851, #9e781f);
+            border: none;
+            width: 52px;
+            height: 52px;
+            min-width: 52px;
+            min-height: 52px;
+            padding: 0;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 5px 14px #000000cc, 0 0 0 2px #ffd700 inset, 0 0 18px #ffd700;
+        }
+
+        #sendButton svg {
+            width: 24px;
+            height: 24px;
+            stroke: #0a0710;
+            stroke-width: 2.2;
+            fill: none;
+            filter: drop-shadow(0 1px 2px black);
+            display: block;
+        }
+
+        #sendButton:hover {
+            background: radial-gradient(circle at 30% 20%, #ffde8a, #c99f2b);
+            transform: scale(1.06);
+            box-shadow: 0 8px 18px black, 0 0 0 2px #fff3c9 inset, 0 0 22px #ffd700;
+        }
+
+        #sendButton:active {
+            transform: scale(0.95);
+        }
+
+        #sendButton:disabled {
+            opacity: 0.4;
+            background: #4a3e28;
+            box-shadow: none;
+            border: 2px solid #63512e;
+            pointer-events: none;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 0; }
+            .chat-container {
+                height: 100dvh;
+                border-radius: 24px;
+            }
+            .message {
+                max-width: 88%;
+                padding: 10px 16px;
+                font-size: 0.9rem;
+            }
+            .input-area {
+                padding: 10px 16px;
+            }
+            #userInput {
+                padding: 10px 18px;
+                font-size: 0.9rem;
+            }
+            #sendButton {
+                width: 48px;
+                height: 48px;
+                min-width: 48px;
+                min-height: 48px;
+            }
+            #sendButton svg {
+                width: 22px;
+                height: 22px;
+            }
+            .header-text h1 {
+                font-size: 1.4rem;
+            }
+        }
+
+        p code {
+            background: #221e2a;
+            color: #ffddaa;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            border: 1px solid #f9a82655;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="header-icon">
+                <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2a10 10 0 0 1 10 10c0 5-4 8-10 8-6 0-10-3-10-8 0-5 4-10 10-10z" />
+                    <path d="M8 13h8" />
+                    <path d="M8 9h8" />
+                    <circle cx="12" cy="13" r="1.5" fill="#ffd700" />
+                    <circle cx="12" cy="9" r="1.5" fill="#ffd700" />
+                </svg>
+            </div>
+            <div class="header-text">
+                <h1>CLINTON TECH AI</h1>
+                <p>GOLD // images · code · live</p>
+            </div>
+        </div>
+
+        <div class="messages" id="messages">
+            <div class="message assistant">⚡ Hello, I'm Clinton Tech AI (compact gold). Ask for images, code, or live previews.</div>
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Type your command..." autocomplete="off">
+            <button id="sendButton" aria-label="Send message">
+                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ---------- FIXED JAVASCRIPT WITH CORRECT REGEX ----------
+        const messagesContainer = document.getElementById('messages');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+
+        let conversationHistory = [];
+
+        function extractImages(text) {
+            const urlPattern = /(https?:\/\/[^\s]+?\.(?:jpg|jpeg|png|gif|webp|bmp|svg))/gi;
+            return text.match(urlPattern) || [];
+        }
+
+        function extractCodeBlocks(text) {
+            const regex = /```(\w*)\n([\s\S]*?)```/g;
+            const blocks = [];
+            let match;
+            while ((match = regex.exec(text)) !== null) {
+                blocks.push({
+                    language: match[1] || 'text',
+                    code: match[2].trim()
+                });
+            }
+            return blocks;
+        }
+
+        function renderMessage(content) {
+            // First, extract code blocks
+            const codeBlocks = extractCodeBlocks(content);
+            
+            // Create a version of content with placeholders for code blocks
+            let textWithPlaceholders = content;
+            
+            // Replace each code block with a placeholder
+            codeBlocks.forEach((block, index) => {
+                const placeholder = `%%CODE_BLOCK_${index}%%`;
+                // Create the exact code block string to replace
+                const blockString = '```' + block.language + '\n' + block.code + '```';
+                // Replace it in the content
+                textWithPlaceholders = textWithPlaceholders.replace(blockString, placeholder);
+            });
+
+            // Escape HTML for the remaining text (but not the placeholders)
+            let escapedText = escapeHtml(textWithPlaceholders);
+            
+            // Replace line breaks with <br>
+            escapedText = escapedText.replace(/\n/g, '<br>');
+
+            // Replace image URLs with <img> tags
+            const imageUrls = extractImages(content);
+            imageUrls.forEach(url => {
+                const escapedUrl = escapeHtml(url);
+                const imgTag = `<br><img src="${escapedUrl}" alt="generated image" onclick="window.open('${escapedUrl}')">`;
+                // Simple string replace - don't use regex here
+                escapedText = escapedText.split(escapedUrl).join(imgTag);
+            });
+
+            // Reinsert code blocks with preview buttons
+            codeBlocks.forEach((block, index) => {
+                const placeholder = `%%CODE_BLOCK_${index}%%`;
+                const buttonHtml = `<button class="preview-btn" onclick="openPreview('${escapeHtml(block.code)}', '${block.language}')">Live Preview</button>`;
+                const codeHtml = `<pre><code>${escapeHtml(block.code)}</code></pre>`;
+                const blockHtml = buttonHtml + codeHtml;
+                escapedText = escapedText.replace(placeholder, blockHtml);
+            });
+
+            return escapedText;
+        }
+
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function escapeRegex(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        window.openPreview = function(code, language) {
+            let fullHtml = '';
+            if (language.toLowerCase() === 'html') {
+                fullHtml = code;
+            } else if (language.toLowerCase() === 'javascript' || language.toLowerCase() === 'js') {
+                fullHtml = `<html><body><script>${code}<\/script></body></html>`;
+            } else {
+                fullHtml = `<html><body><pre>${escapeHtml(code)}</pre></body></html>`;
+            }
+
+            const newWindow = window.open();
+            newWindow.document.write(fullHtml);
+            newWindow.document.close();
+        };
+
+        function addMessage(content, role) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', role);
+            messageDiv.innerHTML = renderMessage(content);
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const indicator = document.createElement('div');
+            indicator.classList.add('typing-indicator');
+            indicator.id = 'typingIndicator';
+            for (let i = 0; i < 3; i++) {
+                const span = document.createElement('span');
+                indicator.appendChild(span);
+            }
+            messagesContainer.appendChild(indicator);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            userInput.disabled = true;
+            sendButton.disabled = true;
+
+            addMessage(message, 'user');
+            conversationHistory.push({ role: 'user', content: message });
+            userInput.value = '';
+
+            showTypingIndicator();
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        history: conversationHistory.slice(0, -1)
+                    })
+                });
+
+                const data = await response.json();
+                removeTypingIndicator();
+
+                if (response.ok) {
+                    const reply = data.reply;
+                    addMessage(reply, 'assistant');
+                    conversationHistory.push({ role: 'assistant', content: reply });
+                } else {
+                    addMessage(`Error: ${data.error || 'Something went wrong'}`, 'assistant');
+                }
+            } catch (error) {
+                removeTypingIndicator();
+                addMessage('Network error. Please try again.', 'assistant');
+                console.error(error);
+            } finally {
+                userInput.disabled = false;
+                sendButton.disabled = false;
+                userInput.focus();
+            }
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>
